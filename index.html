@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>شيكاكو | لعبة المربعات</title>
+<!-- ✅ تعديل: أُزيل رابط Google Fonts الخارجي. الخطوط تُحمّل محلياً عبر @font-face في style.css -->
+<!-- ✅ السبب: ضمان عمل الخطوط بعد التغليف للـ App Store وبدون إنترنت -->
+<link rel="stylesheet" href="style.css">
+<!-- ✅ PWA: ربط manifest لدعم Google Play -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#c8ff57">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+</head>
+<body data-theme="dark">
+
+<canvas id="particles-canvas"></canvas>
+
+<!-- ═══════════════ HOME ═══════════════ -->
+<div id="home-screen" class="screen active">
+
+  <!-- أزرار الإعدادات: فوق يسار (مظهر + صوت + تعليمات) -->
+  <div class="home-topbar-left">
+    <button class="icon-btn" onclick="toggleTheme()"><span id="theme-icon">☀️</span></button>
+    <button class="icon-btn" onclick="toggleSound()" id="sound-btn">🔊</button>
+    <button class="icon-btn" onclick="showScreen('guide-screen')">❓</button>
+  </div>
+
+  <!-- البروفايل: فوق يمين -->
+  <div class="home-profile-corner" onclick="showScreen('profile-screen')">
+    <div class="home-profile-avatar" id="home-avatar">😎</div>
+    <div class="home-profile-info">
+      <div class="home-profile-name" id="home-player-name">اللاعب</div>
+      <div class="home-profile-level" id="home-level-txt">المستوى 1</div>
+    </div>
+    <div class="coin-display" id="home-coins">🪙 0</div>
+  </div>
+
+  <!-- اللوجو -->
+  <div class="logo-wrap">
+    <div class="logo-title">SHIKAKU</div>
+    <div class="logo-sub">فكّر • خطّط • احسم</div>
+  </div>
+
+  <!-- ١: القلوب -->
+  <div class="hearts-bar">
+    <div class="hearts-info">
+      <div class="hearts-display" id="home-hearts-display">❤️❤️❤️❤️❤️</div>
+      <div class="hearts-timer" id="home-hearts-timer">القلوب ممتلئة</div>
+    </div>
+  </div>
+
+  <!-- ٢: العب + لا نهائي -->
+  <div class="home-buttons">
+    <button class="btn-primary" onclick="showScreen('levels-screen')">▶&nbsp; العب</button>
+    <button class="btn-glow" onclick="startInfiniteFromMenu()">♾️ لا نهائي</button>
+  </div>
+
+  <!-- ٣: التحدي اليومي + المهام الأسبوعية -->
+  <div class="home-cards">
+    <div class="mini-card" onclick="openDailyChallenge()">
+      <div class="mini-card-icon">📅</div>
+      <div class="mini-card-text">
+        <div class="mini-card-title">التحدي اليومي</div>
+        <div class="mini-card-sub" id="daily-teaser-status">مكافأة كبيرة!</div>
+      </div>
+    </div>
+    <div class="mini-card" onclick="showScreen('missions-screen')">
+      <div class="mini-card-icon">🎁</div>
+      <div class="mini-card-text">
+        <div class="mini-card-title">المهام الأسبوعية</div>
+        <div class="mini-card-sub" id="missions-teaser">3 مهام بانتظارك</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ٤: مكتملة + سلسلة + أفضل -->
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-val" id="stat-completed">0</div><div class="stat-lbl">مكتملة</div></div>
+    <div class="stat-box"><div class="stat-val" id="stat-streak">0</div><div class="stat-lbl">🔥 سلسلة</div></div>
+    <div class="stat-box"><div class="stat-val" id="stat-infinite">0</div><div class="stat-lbl">♾️ أفضل</div></div>
+  </div>
+
+  <!-- ٥: المتجر + الإنجازات -->
+  <div class="home-buttons">
+    <button class="btn-secondary" onclick="showScreen('shop-screen')">🛒 المتجر</button>
+    <button class="btn-secondary" onclick="showScreen('achievements-screen')">🏅 الإنجازات</button>
+  </div>
+
+  <!-- ٦: إعلانات -->
+  <div class="ad-row">
+    <button class="ad-box ad-box-coins" onclick="watchAd('coins')">
+      <div class="ad-box-icon">📺</div>
+      <div class="ad-box-txt"><div class="ad-box-title">+100 عملة</div><div class="ad-box-sub">شاهد إعلاناً 🪙</div></div>
+    </button>
+    <button class="ad-box ad-box-heart" onclick="watchAd('heart')">
+      <div class="ad-box-icon">📺</div>
+      <div class="ad-box-txt"><div class="ad-box-title">+1 قلب</div><div class="ad-box-sub">شاهد إعلاناً ❤️</div></div>
+    </button>
+  </div>
+
+</div>
+
+<!-- ═══════════════ LEVELS ═══════════════ -->
+<div id="levels-screen" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="showScreen('home-screen')">←</button>
+    <div class="topbar-title">المستويات</div>
+    <div class="coin-display" id="levels-coins">🪙 0</div>
+  </div>
+  <div class="levels-progress-bar">
+    <div class="levels-progress-fill" id="levels-progress-fill"></div>
+    <span id="levels-progress-txt">0 / 75</span>
+  </div>
+  <div class="scroll-area"><div class="levels-grid" id="levels-grid"></div></div>
+</div>
+
+<!-- ═══════════════ GAME ═══════════════ -->
+<div id="game-screen" class="screen">
+  <div class="game-topbar">
+    <div class="game-topbar-left">
+      <button class="back-btn" onclick="openPauseMenu()" title="إيقاف مؤقت">⏸</button>
+      <div class="game-level-badge" id="game-badge">L1</div>
+      <div class="game-level-name" id="game-level-name">—</div>
+    </div>
+    <div class="timer-wrap">
+      <div class="timer-display" id="timer-display">—</div>
+      <div class="timer-ring">
+        <svg viewBox="0 0 38 38" width="38" height="38">
+          <circle class="timer-ring-bg" cx="19" cy="19" r="16"/>
+          <circle class="timer-ring-fill" id="timer-ring-fill" cx="19" cy="19" r="16" stroke-dasharray="100.5" stroke-dashoffset="0"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="shield-active-bar" id="shield-bar">🛡️ الحماية مفعّلة — لن تخسر قلباً إذا انتهى الوقت</div>
+
+  <div class="game-body">
+    <div class="combo-bar" id="combo-bar">
+      🎯 الكومبو: <span class="combo-val" id="combo-val">0</span>
+      <span id="combo-bonus" class="combo-bonus"></span>
+    </div>
+
+    <div class="grid-wrap">
+      <div class="grid-container" id="grid-container">
+        <table class="grid-table" id="grid-table"></table>
+      </div>
+    </div>
+
+    <div class="progress-row" id="progress-row"></div>
+
+    <div class="game-actions">
+      <button class="action-btn" onclick="useHint()" id="btn-hint">💡 <span id="hint-count">(0)</span></button>
+      <button class="action-btn shield-btn" onclick="useShield()" id="btn-shield">🛡️ <span id="shield-count">(0)</span></button>
+      <button class="action-btn extra-btn" onclick="useExtraTime()" id="btn-extra">⏱️ <span id="extra-count">(0)</span></button>
+      <button class="action-btn undo-btn" onclick="undoMove()" id="btn-undo" disabled>↩️</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ SHOP ═══════════════ -->
+<div id="shop-screen" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="showScreen('home-screen')">←</button>
+    <div class="topbar-title">🛒 المتجر</div>
+    <div class="coin-display" id="shop-coins">🪙 0</div>
+  </div>
+  <div class="scroll-area"><div class="shop-body">
+    <div class="shop-hint">اشترِ عناصر تساعدك في المستويات الصعبة 💪</div>
+    <div class="shop-grid" id="shop-grid"></div>
+  </div></div>
+</div>
+
+<!-- ═══════════════ ACHIEVEMENTS ═══════════════ -->
+<div id="achievements-screen" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="showScreen('home-screen')">←</button>
+    <div class="topbar-title">🏅 الإنجازات</div>
+    <div id="ach-progress" class="coin-display" style="color:var(--accent)">0/0</div>
+  </div>
+  <div class="scroll-area"><div class="ach-body" id="ach-body"></div></div>
+</div>
+
+<!-- ═══════════════ MISSIONS ═══════════════ -->
+<div id="missions-screen" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="showScreen('home-screen')">←</button>
+    <div class="topbar-title">🎁 المهام الأسبوعية</div>
+  </div>
+  <div class="scroll-area"><div class="missions-wrap">
+    <div class="missions-week" id="missions-week"></div>
+    <div class="missions-body" id="missions-body"></div>
+  </div></div>
+</div>
+
+<!-- ═══════════════ PROFILE ═══════════════ -->
+<div id="profile-screen" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="showScreen('home-screen')">←</button>
+    <div class="topbar-title">الملف الشخصي</div>
+    <button class="icon-btn" onclick="toggleTheme()"><span id="theme-icon3">☀️</span></button>
+  </div>
+  <div class="scroll-area"><div class="profile-body">
+    <div class="profile-hero">
+      <div class="profile-big-avatar" id="profile-big-avatar" onclick="openAvatarPicker()">
+        😎<div class="avatar-edit-hint">✏️</div>
+      </div>
+      <div class="profile-hero-info">
+        <div class="profile-hero-name" id="profile-name-big" onclick="editName()">اللاعب ✏️</div>
+        <div class="profile-hero-level" id="profile-level-big">المستوى 1</div>
+        <div class="xp-bar-bg"><div class="xp-bar-fill" id="profile-xp-bar" style="width:0%"></div></div>
+        <div class="xp-label"><span id="profile-xp-txt">0 XP</span><span id="profile-xp-max">100 XP</span></div>
+      </div>
+    </div>
+
+    <div class="profile-section">
+      <div class="profile-section-title">📊 الإحصائيات</div>
+      <div class="stats-grid" id="profile-stats-row"></div>
+    </div>
+
+    <div class="profile-section">
+      <div class="profile-section-title">
+        🎒 المخزون
+        <span class="section-link" onclick="showItemsGuide()">ما هذه العناصر؟ ❓</span>
+      </div>
+      <div class="inventory-grid" id="inventory-grid"></div>
+    </div>
+
+    <div class="profile-section">
+      <div class="profile-section-title">🖼️ الصور الرمزية</div>
+      <div class="avatar-grid" id="avatar-select-grid"></div>
+      <button class="btn-primary full" style="margin-top:12px" onclick="saveAvatar()">حفظ الصورة</button>
+    </div>
+
+    <button class="btn-danger full" onclick="confirmResetProgress()">🗑️ إعادة تعيين التقدم</button>
+  </div></div>
+</div>
+
+<!-- ═══════════════ GUIDE ═══════════════ -->
+<div id="guide-screen" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="showScreen('home-screen')">←</button>
+    <div class="topbar-title">كيف تلعب؟</div>
+  </div>
+  <div class="scroll-area"><div class="guide-body">
+    <div class="guide-section">
+      <h3>🎮 فكرة اللعبة</h3>
+      <p>الشبكة مقسّمة إلى خلايا وبعضها يحتوي أرقاماً. حدّد منطقة مستطيلة لكل رقم بحيث يساوي عدد خلاياها قيمة الرقم.</p>
+      <div class="guide-grid-demo">
+        <div class="guide-cell g-sel"></div><div class="guide-cell g-sel"></div><div class="guide-cell g-sel"></div>
+        <div class="guide-cell g-sel"></div><div class="guide-cell g-num">9</div><div class="guide-cell g-sel"></div>
+        <div class="guide-cell g-sel"></div><div class="guide-cell g-sel"></div><div class="guide-cell g-sel"></div>
+      </div>
+      <p>رقم 9 في شبكة 3×3 ← حدّد الشبكة كاملة (9 خلايا).</p>
+    </div>
+    <div class="guide-section"><h3>📏 القواعد</h3>
+      <p>• التحديد مستطيل دائماً<br>• كل رقم له منطقته ولا تتداخل<br>• كل مستطيل يحتوي رقماً واحداً فقط<br>• كل خلية يجب أن تكون ضمن منطقة<br>• إذا انتهى الوقت تخسر وتُعيد</p></div>
+    <div class="guide-section"><h3>🟢🟡🔴 أوضاع الصعوبة</h3>
+      <p>قبل كل مرحلة تختار: <b>سهل</b> (وقت أطول، مكافأة أقل)، <b>عادي</b> (متوازن)، أو <b>خبير</b> (وقت أقل، مكافآت مضاعفة ×1.8).</p></div>
+    <div class="guide-section"><h3>♾️ الوضع اللانهائي</h3>
+      <p>ألغاز لا تنتهي! كل لغز يكبر تدريجياً. رقم اللغز ثابت على كل الأجهزة — لغز #50 هو نفسه عند الجميع، فتقدر تتحدى أصدقاءك على نفس اللغز.</p></div>
+    <div class="guide-section"><h3>🔥 السلسلة</h3>
+      <p>عدد المستويات المتتالية بدون خسارة. كل ما زادت، زادت مكافآت XP والعملات. تنكسر للصفر عند الخسارة.</p></div>
+    <div class="guide-section"><h3>🎯 الكومبو</h3>
+      <p>حل مناطق صحيحة متتالية: كومبو 3 = ×1.5، كومبو 5 = ×2 نقاط. يُعاد للصفر عند الخطأ.</p></div>
+    <div class="guide-section"><h3>🎁 المهام الأسبوعية</h3>
+      <p>3 مهام تتجدد كل أسبوع بمكافآت عملات وXP. أكملها واستلم جوائزها.</p></div>
+    <div class="guide-section"><h3>🎒 العناصر</h3>
+      <div class="items-guide">
+        <div class="item-guide-row"><div class="item-guide-icon">💡</div><div class="item-guide-info"><div class="item-guide-name">تلميح</div><div class="item-guide-desc">يحل منطقة واحدة تلقائياً عند التعلّق.</div></div></div>
+        <div class="item-guide-row"><div class="item-guide-icon">🛡️</div><div class="item-guide-info"><div class="item-guide-name">الحماية</div><div class="item-guide-desc">إذا انتهى الوقت وهي مفعّلة، لا تخسر قلباً (تُحفظ قلوبك دون تخطّي المرحلة).</div></div></div>
+        <div class="item-guide-row"><div class="item-guide-icon">⏱️</div><div class="item-guide-info"><div class="item-guide-name">وقت إضافي</div><div class="item-guide-desc">يضيف 30 ثانية فوراً.</div></div></div>
+        <div class="item-guide-row"><div class="item-guide-icon">↩️</div><div class="item-guide-info"><div class="item-guide-name">تراجع</div><div class="item-guide-desc">يلغي آخر منطقة وضعتها.</div></div></div>
+      </div></div>
+    <div class="guide-section"><h3>⭐ النجوم</h3>
+      <p>⭐⭐⭐ أكملت في أقل من نصف الوقت • ⭐⭐ في الوقت المتوسط • ⭐ قبل النهاية.</p></div>
+  </div></div>
+</div>
+
+<!-- ═══════════════ OVERLAYS ═══════════════ -->
+<div class="overlay" id="mode-overlay">
+  <div class="modal">
+    <div class="modal-icon">🎚️</div>
+    <div class="modal-title">اختر الصعوبة</div>
+    <div class="modal-sub">نفس اللغز — تحدٍّ مختلف</div>
+    <div class="mode-picker-grid" id="mode-picker-grid"></div>
+    <div class="modal-buttons" style="margin-top:8px">
+      <button class="btn-secondary full" onclick="closeOverlay('mode-overlay')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="win-overlay">
+  <div class="modal">
+    <div class="modal-icon" id="win-icon">🎉</div>
+    <div class="modal-title">أحسنت!</div>
+    <div class="modal-sub" id="win-sub">حللت اللغز!</div>
+    <div class="rewards-list" id="win-rewards"></div>
+    <div class="modal-buttons">
+      <button class="btn-primary full" onclick="nextLevel()" id="win-next-btn">▶ المستوى التالي</button>
+      <button class="btn-secondary full" onclick="closeOverlay('win-overlay');backToMenuFromGame()">القائمة</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="lose-overlay">
+  <div class="modal">
+    <div class="modal-icon">⏰</div>
+    <div class="modal-title">انتهى الوقت!</div>
+    <div class="modal-sub" id="lose-sub">السلسلة انكسرت — حاول مجدداً!</div>
+    <div class="modal-buttons">
+      <button class="btn-primary full" onclick="retryLevel()">↺ أعد المحاولة</button>
+      <button class="btn-secondary full" onclick="closeOverlay('lose-overlay');backToMenuFromGame()">القائمة</button>
+    </div>
+  </div>
+</div>
+
+<!-- 📺 نافذة الإعلان الوهمي (عدّاد 30 ثانية ثم مكافأة) -->
+<div class="overlay" id="ad-overlay">
+  <div class="modal">
+    <div class="modal-icon">📺</div>
+    <div class="modal-title" id="ad-title">شاهد إعلاناً</div>
+    <div class="ad-screen">
+      <div class="ad-fake-label">إعلان</div>
+      <div class="ad-counter" id="ad-count">30</div>
+      <div class="ad-hint">يُرجى مشاهدة الإعلان كاملاً للحصول على المكافأة</div>
+    </div>
+    <div class="modal-buttons">
+      <button class="btn-primary full" id="ad-claim-btn" style="display:none" onclick="claimAdReward()">🎁 استلم المكافأة</button>
+      <button class="btn-secondary full" id="ad-skip-btn" onclick="cancelAd()">إغلاق</button>
+    </div>
+    <div class="ad-cancel-link" onclick="cancelAd()">تخطّي (بدون مكافأة)</div>
+  </div>
+</div>
+
+<!-- 📺 الإعلان البيني — يظهر تلقائياً بعد كل مرحلة (إجباري لـ 5 ثوانٍ، ثم زر تخطي) -->
+<div class="overlay" id="interstitial-overlay">
+  <div class="modal">
+    <div class="modal-icon">📺</div>
+    <div class="modal-title">إعلان قصير</div>
+    <div class="ad-screen">
+      <div class="ad-fake-label">إعلان</div>
+      <div class="ad-counter" id="inter-count">30</div>
+      <div class="ad-hint">شاهد كاملاً لتربح +20 عملة 🪙</div>
+    </div>
+    <div class="modal-buttons">
+      <!-- زر استلام المكافأة (يظهر بعد إكمال 30ث) -->
+      <button class="btn-primary full" id="inter-claim-btn" style="display:none" onclick="claimInterstitialReward()">🎁 استلم +20 عملة</button>
+      <!-- زر التخطي (يظهر بعد 5 ثوانٍ) -->
+      <button class="btn-secondary full" id="inter-skip-btn" style="display:none" onclick="skipInterstitial()">⏭️ تخطي الإعلان</button>
+    </div>
+    <!-- العدّاد النصي قبل ظهور زر التخطي -->
+    <div class="ad-hint" id="inter-skip-hint">يمكن التخطي بعد <span id="inter-skip-num">5</span> ثوانٍ</div>
+  </div>
+</div>
+
+<!-- ❤️ نافذة نفاد القلوب -->
+<div class="overlay" id="hearts-overlay">
+  <div class="modal">
+    <div class="modal-icon">💔</div>
+    <div class="modal-title">نفدت القلوب!</div>
+    <div class="hearts-display" style="font-size:1.3rem;margin:6px 0">🖤🖤🖤🖤🖤</div>
+    <div class="modal-sub hearts-timer">القلب التالي قريباً</div>
+    <div class="modal-buttons">
+      <button class="btn-primary full" onclick="closeOverlay('hearts-overlay');watchAd('heart')">📺 شاهد إعلاناً لربح قلب</button>
+      <button class="btn-secondary full" onclick="closeOverlay('hearts-overlay')">حسناً</button>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ قائمة الإيقاف المؤقت — تجمع الاستئناف والإعادة والخروج -->
+<div class="overlay" id="pause-overlay">
+  <div class="modal">
+    <div class="modal-icon">⏸</div>
+    <div class="modal-title">إيقاف مؤقت</div>
+    <div class="modal-sub" id="pause-sub">—</div>
+    <div class="modal-buttons">
+      <button class="btn-primary full" onclick="closePauseMenu()">▶ استئناف اللعب</button>
+      <button class="btn-secondary full" id="pause-reset-btn" onclick="pauseDoReset()">↺ إعادة المرحلة</button>
+      <button class="btn-danger full" id="pause-quit-btn" onclick="pauseDoQuit()">🚪 الخروج</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="levelup-overlay">
+  <div class="modal">
+    <div class="modal-icon">🚀</div>
+    <div class="modal-title" id="levelup-title">مستوى جديد!</div>
+    <div class="modal-sub" id="levelup-sub">لقد ارتقيت!</div>
+    <div class="rewards-list" id="levelup-rewards"></div>
+    <div class="modal-buttons"><button class="btn-primary full" onclick="closeOverlay('levelup-overlay')">رائع! 🎊</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="ach-unlock-overlay">
+  <div class="modal">
+    <div class="modal-icon" id="ach-unlock-icon">🏅</div>
+    <div class="modal-title">إنجاز جديد!</div>
+    <div class="modal-sub" id="ach-unlock-name">—</div>
+    <div class="rewards-list" id="ach-unlock-rewards"></div>
+    <div class="modal-buttons"><button class="btn-primary full" onclick="closeOverlay('ach-unlock-overlay')">رائع! 🎉</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="items-guide-overlay">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-icon">📦</div>
+    <div class="modal-title">دليل العناصر</div>
+    <div class="streak-info-card">
+      <div class="streak-info-title">🔥 السلسلة</div>
+      <div class="streak-info-desc">مستويات متتالية بدون خسارة. كل ما زادت تحصل مكافآت أكبر. تبدأ من الصفر عند الخسارة!</div>
+    </div>
+    <div class="items-guide">
+      <div class="item-guide-row"><div class="item-guide-icon">💡</div><div class="item-guide-info"><div class="item-guide-name">تلميح</div><div class="item-guide-desc">يحل منطقة واحدة تلقائياً.</div></div></div>
+      <div class="item-guide-row"><div class="item-guide-icon">🛡️</div><div class="item-guide-info"><div class="item-guide-name">الحماية</div><div class="item-guide-desc">إذا انتهى الوقت لا تخسر قلباً — تحتفظ بقلوبك.</div></div></div>
+      <div class="item-guide-row"><div class="item-guide-icon">⏱️</div><div class="item-guide-info"><div class="item-guide-name">وقت إضافي</div><div class="item-guide-desc">+30 ثانية فوراً.</div></div></div>
+    </div>
+    <div class="modal-buttons" style="margin-top:14px"><button class="btn-primary full" onclick="closeOverlay('items-guide-overlay')">فهمت 👍</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="avatar-overlay">
+  <div class="modal">
+    <div class="modal-icon">🖼️</div>
+    <div class="modal-title">اختر صورتك</div>
+    <div class="modal-sub">المقفلة تظهر باهتة — أكمل مستويات لفتحها</div>
+    <div class="avatar-grid" id="avatar-picker-grid"></div>
+    <div class="modal-buttons" style="margin-top:14px">
+      <button class="btn-primary full" onclick="confirmAvatar()">حفظ</button>
+      <button class="btn-secondary full" onclick="closeOverlay('avatar-overlay')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ NAME INPUT OVERLAY (✅ جديد: بديل prompt المحجوب على iOS) ═══════════ -->
+<div class="overlay" id="name-overlay">
+  <div class="modal">
+    <div class="modal-icon">✏️</div>
+    <div class="modal-title">تغيير الاسم</div>
+    <div class="modal-sub">اكتب اسمك الجديد (حتى 12 حرفاً)</div>
+    <!-- حقل إدخال مخصص — بلا وسم form لتجنّب إعادة تحميل الصفحة داخل WebView -->
+    <input type="text" id="name-input" class="name-input-field"
+           maxlength="12" placeholder="اسم اللاعب"
+           autocomplete="off" autocorrect="off" spellcheck="false">
+    <div class="modal-buttons" style="margin-top:14px">
+      <button class="btn-primary full" onclick="confirmNameChange()">حفظ</button>
+      <button class="btn-secondary full" onclick="closeOverlay('name-overlay')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="confirm-overlay">
+  <div class="modal">
+    <div class="modal-icon" id="confirm-icon">⚠️</div>
+    <div class="modal-title" id="confirm-title">تأكيد</div>
+    <div class="modal-sub" id="confirm-sub">—</div>
+    <div class="modal-buttons">
+      <button class="btn-danger full" id="confirm-yes">نعم</button>
+      <button class="btn-secondary full" onclick="closeOverlay('confirm-overlay')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toast-icon"></span><span id="toast-msg"></span></div>
+
+<script src="script.js"></script>
+<!-- ✅ PWA: تسجيل Service Worker للعمل بدون إنترنت -->
+<script>
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('./service-worker.js');
+  }
+</script>
+</body>
+</html>
