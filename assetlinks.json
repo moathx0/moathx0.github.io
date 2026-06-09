@@ -1,8 +1,0 @@
-[{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "com.moathx0.shikaku",
-        "sha256_cert_fingerprints": ["E1:11:26:18:64:13:9D:A7:97:77:F2:B5:31:B6:C0:3C:2A:6A:40:25:31:E8:9A:F9:4B:79:3D:C9:E9:BF:AE:0E"]
-      }
-    }]
